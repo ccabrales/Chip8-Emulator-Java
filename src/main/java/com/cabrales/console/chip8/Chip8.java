@@ -28,6 +28,7 @@ public class Chip8 {
 
     public Chip8() {
         this.memory = new byte[MEM_SIZE];
+        loadFontset();
     }
 
     public Chip8(byte[] memory) {
@@ -158,7 +159,134 @@ public class Chip8 {
 
     // Where the instruction given is executed according to the Chip8 specs
     public void execute(int instruction) {
-        throw new UnsupportedOperationException("Unsupported opcode:" + Integer.toHexString(instruction));
+        int opCode = instruction & 0xF000;
+        int x = (instruction & 0x0F00) >> 8;
+        int y = (instruction & 0x00F0) >> 8;
+        int nn = instruction & 0xFF;
+        int nnn = instruction & 0xFFF;
+
+        switch(opCode) {
+            case 0x0000:
+                switch (instruction) {
+                    //CLS - Clear screen
+                    case 0x00E0:
+                        display = new byte[memory.length];
+                        break;
+
+                    //RET - Returns from subroutine
+                    case 0x00EE:
+                        pc = stack[--sp];
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unsupported opcode:" + Integer.toHexString(instruction));
+                }
+                break;
+
+            // JP - addr
+            case 0x1000:
+                pc = nnn;
+                break;
+
+            // CALL - addr
+            case 0x2000:
+                stack[sp++] = pc;
+                pc = nnn;
+                break;
+
+            // SE
+            case 0x3000:
+                if (getVX(x) == nn) {
+                    pc += 2;
+                }
+                break;
+
+            // SNE
+            case 0x4000:
+                if (getVX(x) != nn) {
+                    pc += 2;
+                }
+                break;
+
+            // SE
+            case 0x5000:
+                if (getVX(x) == getVX(y)) {
+                    pc += 2;
+                }
+                break;
+
+            // LD
+            case 0x6000:
+                setVX(x, nn);
+                break;
+
+            // ADD
+            case 0x7000:
+                setVX(x, getVX(x) + nn);
+                break;
+
+            case 0x8000:
+                int low = instruction & 0xF;
+                switch (low) {
+                    // LD
+                    case 0x0:
+                        setVX(x, getVX(y));
+                        break;
+
+                    // OR
+                    case 0x1:
+                        setVX(x, getVX(x) | getVX(y));
+                        break;
+
+                    // AND
+                    case 0x2:
+                        setVX(x, getVX(x) & getVX(y));
+                        break;
+
+                    // XOR
+                    case 0x3:
+                        setVX(x, getVX(x) ^ getVX(y));
+                        break;
+
+                    // ADD
+                    case 0x4:
+                        int sum = getVX(x) + getVX(y);
+                        setVX(0xF, sum > 255 ? 1 : 0);
+                        setVX(x, sum);
+
+                        if (getVX(x) > 255) {
+                            setVX(x, getVX(x) - 255);
+                        }
+                        break;
+
+                    // SUB
+                    case 0x5:
+                        break;
+                    case 0x6:
+                        break;
+                    case 0x7:
+                        break;
+                    case 0xE:
+                        break;
+                }
+                break;
+
+            case 0x9000:
+                break;
+            case 0xA000:
+                break;
+            case 0xB000:
+                break;
+            case 0xC000:
+                break;
+            case 0xD000:
+                break;
+            case 0xE000:
+                break;
+            case 0xF000:
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported opcode:" + Integer.toHexString(instruction));
+        }
     }
 
     public void cycle() {
