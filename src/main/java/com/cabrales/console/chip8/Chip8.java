@@ -1,7 +1,10 @@
 package com.cabrales.console.chip8;
 
-import java.lang.reflect.Array;
+import com.cabrales.console.chip8.util.Audio;
+import com.cabrales.console.chip8.util.Input;
+
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Created by Casey on 9/5/16.
@@ -13,6 +16,7 @@ public class Chip8 {
     private static final int DISPLAY_HEIGHT = 32;
     private static final int DISPLAY_WIDTH = 64;
     private static final int MEM_SIZE = 4096;
+    private final Random random = new Random();
 
     private int pc = 0x200;
     private final byte[] memory;
@@ -161,7 +165,7 @@ public class Chip8 {
     public void execute(int instruction) {
         int opCode = instruction & 0xF000;
         int x = (instruction & 0x0F00) >> 8;
-        int y = (instruction & 0x00F0) >> 8;
+        int y = (instruction & 0x00F0) >> 4;
         int nn = instruction & 0xFF;
         int nnn = instruction & 0xFFF;
 
@@ -216,12 +220,12 @@ public class Chip8 {
 
             // LD
             case 0x6000:
-                setVX(x, nn);
+                setVX(nn, x);
                 break;
 
             // ADD
             case 0x7000:
-                setVX(x, getVX(x) + nn);
+                setVX(getVX(x) + nn, x);
                 break;
 
             case 0x8000:
@@ -229,60 +233,179 @@ public class Chip8 {
                 switch (low) {
                     // LD
                     case 0x0:
-                        setVX(x, getVX(y));
+                        setVX(getVX(y), x);
                         break;
 
                     // OR
                     case 0x1:
-                        setVX(x, getVX(x) | getVX(y));
+                        setVX(getVX(x) | getVX(y), x);
                         break;
 
                     // AND
                     case 0x2:
-                        setVX(x, getVX(x) & getVX(y));
+                        setVX(getVX(x) & getVX(y), x);
                         break;
 
                     // XOR
                     case 0x3:
-                        setVX(x, getVX(x) ^ getVX(y));
+                        setVX(getVX(x) ^ getVX(y), x);
                         break;
 
                     // ADD
                     case 0x4:
                         int sum = getVX(x) + getVX(y);
-                        setVX(0xF, sum > 255 ? 1 : 0);
-                        setVX(x, sum);
+                        setVX(sum > 255 ? 1 : 0, 0xF);
+                        setVX(sum, x);
 
                         if (getVX(x) > 255) {
-                            setVX(x, getVX(x) - 255);
+                            setVX(getVX(x) - 255, x);
                         }
                         break;
 
                     // SUB
                     case 0x5:
+                        int sub = getVX(x) - getVX(y);
+                        setVX(getVX(x) > getVX(y) ? 1 : 0, 0xF);
+                        setVX(sub, x);
+
+                        if (getVX(x) < 0) {
+                            setVX(getVX(x) + 256, x);
+                        }
                         break;
+
+                    // SHR
                     case 0x6:
+                        setVX(getVX(x) & 0x1, 0xF);
+                        setVX(getVX(x) >> 1, x);
                         break;
+
+                    // SUBN
                     case 0x7:
+                        setVX(getVX(y) - getVX(x), x);
+                        if (getVX(y) > getVX(x)) {
+                            setVX(getVX(x) + 256, x);
+                            setVX(1, 0xF);
+                        } else {
+                            setVX(0, 0xF);
+                        }
                         break;
+
+                    // SHL
                     case 0xE:
+                        setVX((getVX(x) >> 7) & 0x01, 0xF);
+                        setVX(getVX(x) << 1, x);
                         break;
+                    default:
+                        throw new UnsupportedOperationException("Unsupported opcode:" + Integer.toHexString(instruction));
                 }
                 break;
 
+            // SNE
             case 0x9000:
+                if (getVX(x) != getVX(y)) {
+                    pc += 2;
+                }
                 break;
+
+            // LD
             case 0xA000:
+                iRegister = nnn;
                 break;
+
+            // JP
             case 0xB000:
+                pc = getV0() + nnn;
                 break;
+
+            // RND
             case 0xC000:
+                setVX(random.nextInt(0xFF) & nn, x);
                 break;
+
+            // DRW TODO
             case 0xD000:
                 break;
+
             case 0xE000:
+                switch(nn) {
+                    // SKP
+                    case 0x9E:
+                        if (Input.read() == getVX(x)) {
+                            pc += 2;
+                        }
+                        break;
+
+                    // SKNP
+                    case 0xA1:
+                        if (Input.read() != getVX(x)) {
+                            pc += 2;
+                        }
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unsupported opcode:" + Integer.toHexString(instruction));
+                }
                 break;
             case 0xF000:
+                switch(nn) {
+                    // LD
+                    case 0x07:
+                        setVX(delayTimer, x);
+                        break;
+
+                    // LD
+                    case 0x0A:
+                        if (Input.read() == -1) {
+                            pc -= 2;
+                        } else {
+                            setVX(Input.read(), x);
+                        }
+                        break;
+
+                    // LD DT
+                    case 0x15:
+                        delayTimer = getVX(x);
+                        break;
+
+                    // LD ST
+                    case 0x18:
+                        soundTimer = getVX(x);
+                        break;
+
+                    // ADD I
+                    case 0x1E:
+                        iRegister += getVX(x);
+                        break;
+
+                    // LD F
+                    case 0x29:
+                        iRegister = getVX(x) * 5;
+                        break;
+
+                    // LD B
+                    case 0x33:
+                        int val = getVX(x);
+                        for (int i = iRegister + 2; i >= iRegister - 2; i--) {
+                            memory[i] = (byte) (val % 10);
+                            val /= 10;
+                        }
+                        break;
+
+                    // LD [I]
+                    case 0x55:
+                        for (int i = 0; i <= x; i++) {
+                            memory[iRegister + i] = (byte) getVX(i);
+                        }
+                        break;
+
+                    // LD Vx
+                    case 0x65:
+                        for (int i = 0; i <= x; i++) {
+                            setVX(memory[iRegister + i], x);
+                        }
+                        break;
+                    default:
+                        throw new UnsupportedOperationException("Unsupported opcode:" + Integer.toHexString(instruction));
+                }
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported opcode:" + Integer.toHexString(instruction));
@@ -290,7 +413,24 @@ public class Chip8 {
     }
 
     public void cycle() {
+        int currInstruction = ((memory[pc++] << 8) & 0xFF00 | (memory[pc++] & 0xFF));
 
+        long currTime = System.currentTimeMillis();
+        if (currTime > step) {
+            if (delayTimer > 0) {
+                delayTimer--;
+            }
+            if (soundTimer > 0) {
+                soundTimer--;
+                Audio.play();
+            } else {
+                Audio.stop();
+            }
+
+            step = currTime + (1000 / 60);
+        }
+
+        execute(currInstruction);
     }
 
 }
