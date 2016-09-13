@@ -322,8 +322,21 @@ public class Chip8 {
                 setVX(random.nextInt(0xFF) & nn, x);
                 break;
 
-            // DRW TODO
+            // DRW
             case 0xD000:
+                int xCoord = getVX(x);
+                int yCoord = getVX(y);
+                int height = instruction & 0x00F;
+
+                setVX(0, 0xF);
+
+                for (int i = 0; i < height; i++) {
+                    byte pixelRow = getPixelRow(xCoord, yCoord + i);
+                    writeNewDisplay(xCoord, yCoord + i, memory[iRegister + i]);
+                    if ((memory[iRegister + i] & pixelRow) != 0) {
+                        setVX(1, 0xF);
+                    }
+                }
                 break;
 
             case 0xE000:
@@ -431,6 +444,32 @@ public class Chip8 {
         }
 
         execute(currInstruction);
+    }
+
+    private byte getPixelRow(int x, int y) {
+        x %= 64;
+        y %= 32;
+        byte res = display[x + y * 64];
+
+        for (int i = 1; i < 8; i++) {
+            res |= (display[(x + i) % 64 + y * 64] << (8 - i));
+        }
+
+        return res;
+    }
+
+    private void writeNewDisplay(int x, int y, byte loc) {
+        x %= 64;
+        y %= 32;
+
+        display[x + y * 64] ^= (byte) ((loc & 0b10000000) >> 7);
+        display[(1 + (x)) % 64 + (y) * 64] ^= (byte) ((loc & 0b01000000) >> 6);
+        display[(2 + (x)) % 64 + (y) * 64] ^= (byte) ((loc & 0b00100000) >> 5);
+        display[(3 + (x)) % 64  + (y) * 64] ^= (byte) ((loc & 0b00010000) >> 4);
+        display[(4 + (x)) % 64  + (y) * 64] ^= (byte) ((loc & 0b00001000) >> 3);
+        display[(5 + (x)) % 64  + (y) * 64] ^= (byte) ((loc & 0b00000100) >> 2);
+        display[(6 + (x)) % 64  + (y) * 64] ^= (byte) ((loc & 0b00000010) >> 1);
+        display[(7 + (x)) % 64 + (y) * 64] ^= (byte) ((loc & 0b00000001));
     }
 
 }
