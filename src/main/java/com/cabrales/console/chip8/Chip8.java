@@ -406,14 +406,14 @@ public class Chip8 {
                     // LD [I]
                     case 0x55:
                         for (int i = 0; i <= x; i++) {
-                            memory[iRegister + i] = (byte) getVX(i);
+                            memory[iRegister++] = (byte) getVX(i);
                         }
                         break;
 
                     // LD Vx
                     case 0x65:
                         for (int i = 0; i <= x; i++) {
-                            setVX(memory[iRegister + i], x);
+                            setVX(memory[iRegister++], i);
                         }
                         break;
                     default:
