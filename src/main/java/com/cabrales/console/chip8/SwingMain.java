@@ -105,7 +105,7 @@ public class SwingMain extends javax.swing.JFrame implements KeyListener {
         outputPanel.addKeyListener(SwingMain.this);
 
         openButton.setBackground(new java.awt.Color(102, 102, 255));
-        openButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/open.png"))); // NOI18N
+        openButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/open.png"))); // NOI18N
         openButton.setToolTipText("Open Binary");
         openButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -114,7 +114,7 @@ public class SwingMain extends javax.swing.JFrame implements KeyListener {
         });
 
         aboutButton.setBackground(new java.awt.Color(102, 102, 255));
-        aboutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/about.png"))); // NOI18N
+        aboutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/about.png"))); // NOI18N
         aboutButton.setToolTipText("About");
         aboutButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -123,7 +123,7 @@ public class SwingMain extends javax.swing.JFrame implements KeyListener {
         });
 
         inputMapButton.setBackground(new java.awt.Color(102, 102, 255));
-        inputMapButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/input.png"))); // NOI18N
+        inputMapButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/input.png"))); // NOI18N
         inputMapButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 inputMapButtonActionPerformed(evt);
@@ -172,7 +172,7 @@ public class SwingMain extends javax.swing.JFrame implements KeyListener {
         jScrollPane1.setViewportView(jTable1);
 
         jButton1.setBackground(new java.awt.Color(102, 102, 255));
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/play.png"))); // NOI18N
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/play.png"))); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -180,7 +180,7 @@ public class SwingMain extends javax.swing.JFrame implements KeyListener {
         });
 
         jButton2.setBackground(new java.awt.Color(102, 102, 255));
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pause.png"))); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/pause.png"))); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -188,7 +188,7 @@ public class SwingMain extends javax.swing.JFrame implements KeyListener {
         });
 
         jButton3.setBackground(new java.awt.Color(102, 102, 255));
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/skip.png"))); // NOI18N
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/skip.png"))); // NOI18N
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
